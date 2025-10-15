@@ -1,0 +1,5 @@
+{
+  "name": "SmartPay Dashboard",
+  "description": "A futuristic, glassmorphism-style financial dashboard UI demonstrating a modern payment interface. Features include balance overview, transaction history, spending analytics, and a payment modal.",
+  "requestFramePermissions": []
+}
