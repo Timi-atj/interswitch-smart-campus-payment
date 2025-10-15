@@ -2,26 +2,34 @@
 import express from "express";
 import cors from "cors";
 import fetch from "node-fetch";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Sandbox credentials (replace with your real merchant keys later)
-const CLIENT_ID = "your_client_id_here";
-const CLIENT_SECRET = "your_client_secret_here";
+// ✅ Use Render’s dynamic port or local fallback
+const PORT = process.env.PORT || 4000;
+
+// ✅ Environment variables for sandbox credentials
+const CLIENT_ID = process.env.CLIENT_ID || "your_client_id_here";
+const CLIENT_SECRET = process.env.CLIENT_SECRET || "your_client_secret_here";
 const BASE_URL = "https://sandbox.interswitchng.com";
 
+// ✅ Health check route (helps Render detect app status)
+app.get("/", (req, res) => {
+  res.send("✅ SmartPay backend is live (Render deployment ready).");
+});
+
+// ✅ Demo payment route
 app.post("/api/pay", async (req, res) => {
   const { amount, customerId, reference } = req.body;
 
   try {
-    // 🔹 Step 1: Simulate payment initialization
-    // In a real implementation, you’d get an access token first, then initialize the transaction.
-    // For demo, just send back a mock redirect URL.
+    // Simulate redirect to Interswitch sandbox
     const paymentUrl = `${BASE_URL}/webpay/paydemo?ref=${reference}&amount=${amount}`;
 
-    // Send response back to frontend
     res.json({
       message: "Payment initialized (sandbox)",
       paymentUrl,
@@ -33,5 +41,19 @@ app.post("/api/pay", async (req, res) => {
   }
 });
 
-const PORT = 4000;
-app.listen(PORT, () => console.log(`✅ Server running on http://localhost:${PORT}`));
+// ✅ Serve frontend build (only when in production)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static(path.join(__dirname, "dist")));
+
+  app.get("*", (_, res) => {
+    res.sendFile(path.join(__dirname, "dist", "index.html"));
+  });
+}
+
+// ✅ Start server
+app.listen(PORT, () => {
+  console.log(`✅ SmartPay backend running on port ${PORT}`);
+});
