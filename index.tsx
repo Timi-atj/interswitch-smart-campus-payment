@@ -4,7 +4,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import App from "./App"; // Dashboard
 import Login from "./Login";
 import Signup from "./Signup";
-import "./index.css";
+import "./src/index.css";
 
 const Root = () => {
   const isAuthenticated = !!localStorage.getItem("authToken");
