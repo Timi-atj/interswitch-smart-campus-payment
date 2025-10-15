@@ -2,58 +2,93 @@
 import express from "express";
 import cors from "cors";
 import fetch from "node-fetch";
-import path from "path";
-import { fileURLToPath } from "url";
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// ✅ Use Render’s dynamic port or local fallback
 const PORT = process.env.PORT || 4000;
 
-// ✅ Environment variables for sandbox credentials
-const CLIENT_ID = process.env.CLIENT_ID || "your_client_id_here";
-const CLIENT_SECRET = process.env.CLIENT_SECRET || "your_client_secret_here";
+const CLIENT_ID = process.env.CLIENT_ID;
+const CLIENT_SECRET = process.env.CLIENT_SECRET;
+const MERCHANT_CODE = process.env.MERCHANT_CODE;
 const BASE_URL = "https://sandbox.interswitchng.com";
 
-// ✅ Health check route (helps Render detect app status)
-app.get("/", (req, res) => {
-  res.send("✅ SmartPay backend is live (Render deployment ready).");
-});
+// 🪙 Get Access Token
+async function getAccessToken() {
+  const tokenUrl = `${BASE_URL}/passport/oauth/token`;
 
-// ✅ Demo payment route
+  const headers = {
+    "Content-Type": "application/x-www-form-urlencoded",
+    Authorization:
+      "Basic " + Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString("base64"),
+  };
+
+  const body = new URLSearchParams({
+    grant_type: "client_credentials",
+  });
+
+  const response = await fetch(tokenUrl, {
+    method: "POST",
+    headers,
+    body,
+  });
+
+  if (!response.ok) throw new Error("Failed to get access token");
+
+  const data = await response.json();
+  return data.access_token;
+}
+
+// 💳 Initialize Payment
 app.post("/api/pay", async (req, res) => {
   const { amount, customerId, reference } = req.body;
 
   try {
-    // Simulate redirect to Interswitch sandbox
-    const paymentUrl = `${BASE_URL}/webpay/paydemo?ref=${reference}&amount=${amount}`;
+    const accessToken = await getAccessToken();
 
-    res.json({
-      message: "Payment initialized (sandbox)",
-      paymentUrl,
-      reference,
+    const initUrl = `${BASE_URL}/api/v1/payments`;
+    const headers = {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+    };
+
+    const payload = {
+      amount,
+      currency: "566", // NGN
+      merchantCode: MERCHANT_CODE,
+      payItemId: "Default_Pay_Item",
+      transactionReference: reference,
+      redirectUrl: "https://your-frontend-domain.com/payment-success",
+      customerId,
+      customerEmail: "test@example.com",
+    };
+
+    const response = await fetch(initUrl, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(payload),
     });
+
+    const data = await response.json();
+    console.log("Interswitch IPG response:", data);
+
+    // Respond to frontend
+    if (data.paymentUrl) {
+      res.json({ paymentUrl: data.paymentUrl });
+    } else {
+      res.json({ message: "Payment initialized", data });
+    }
   } catch (error) {
     console.error("Payment error:", error);
-    res.status(500).json({ error: "Payment initialization failed" });
+    res.status(500).json({ error: error.message });
   }
 });
 
-// ✅ Serve frontend build (only when in production)
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-if (process.env.NODE_ENV === "production") {
-  app.use(express.static(path.join(__dirname, "dist")));
-
-  app.get("*", (_, res) => {
-    res.sendFile(path.join(__dirname, "dist", "index.html"));
-  });
-}
-
-// ✅ Start server
-app.listen(PORT, () => {
-  console.log(`✅ SmartPay backend running on port ${PORT}`);
+app.get("/", (req, res) => {
+  res.send("✅ SmartPay IPG backend live on Render!");
 });
+
+app.listen(PORT, () =>
+  console.log(`✅ SmartPay backend running on port ${PORT}`)
+);
