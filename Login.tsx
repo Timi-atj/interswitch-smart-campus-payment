@@ -15,7 +15,7 @@ export default function Login() {
     setLoading(true);
     setTimeout(() => {
       localStorage.setItem("authToken", "mock123");
-      navigate("/Dashboard");
+      navigate("/dashboard");
     }, 1000);
   };
 
