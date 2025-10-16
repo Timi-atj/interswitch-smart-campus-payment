@@ -9,7 +9,7 @@ import AnalyticsChart from './components/AnalyticsChart';
 import Sidebar from './components/Sidebar';
 import PaymentModal from './components/PaymentModal';
 
-export default function App() {
+export default function Dashboard() {
   const [themeDark, setThemeDark] = useState(true);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [balance] = useState(54230.75);

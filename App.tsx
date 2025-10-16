@@ -9,20 +9,13 @@ export default function App() {
 
   return (
     <Routes>
-      {/* Default route -> go to login */}
       <Route path="/" element={<Navigate to="/login" replace />} />
-
-      {/* Auth routes */}
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
-
-      {/* Protected route */}
       <Route
         path="/dashboard"
         element={isLoggedIn ? <Dashboard /> : <Navigate to="/login" replace />}
       />
-
-      {/* Wildcard fallback */}
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );
