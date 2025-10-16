@@ -14,8 +14,8 @@ export default function Login() {
     e.preventDefault();
     setLoading(true);
     setTimeout(() => {
-      localStorage.setItem("authToken", "mock123");
-      navigate("/dashboard");
+    localStorage.setItem("authToken", "mock123");
+    window.location.href = "/dashboard";
     }, 1000);
   };
 
