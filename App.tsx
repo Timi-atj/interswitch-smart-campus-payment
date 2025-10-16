@@ -5,17 +5,25 @@ import Signup from "./Signup";
 import Dashboard from "./Dashboard";
 
 export default function App() {
-  const isLoggedIn = localStorage.getItem("authToken");
+  const isLoggedIn = !!localStorage.getItem("authToken");
 
   return (
     <Routes>
+      {/* Default route -> go to login */}
+      <Route path="/" element={<Navigate to="/login" replace />} />
+
+      {/* Auth routes */}
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
+
+      {/* Protected route */}
       <Route
-        path="/"
+        path="/dashboard"
         element={isLoggedIn ? <Dashboard /> : <Navigate to="/login" replace />}
       />
-      <Route path="*" element={<Navigate to="/" replace />} />
+
+      {/* Wildcard fallback */}
+      <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );
 }
