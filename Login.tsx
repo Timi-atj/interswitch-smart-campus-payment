@@ -2,8 +2,10 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import AnimatedBackground from "./components/AnimatedBackground";
+import { useNavigate } from "react-router-dom";
 
 export default function Login() {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -13,7 +15,7 @@ export default function Login() {
     setLoading(true);
     setTimeout(() => {
       localStorage.setItem("authToken", "mock123");
-      window.location.href = "/";
+      navigate("/Dashboard");
     }, 1000);
   };
 
